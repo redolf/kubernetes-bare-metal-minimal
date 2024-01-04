@@ -1,0 +1,9 @@
+---
+# vars file for k8s_prepare
+docker_version: 1.6.*
+k8s_version: "1.28.*"
+k8s_repo_key: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+k8s_repo: deb https://apt.kubernetes.io kubernetes-xenial main
+docker_repo: https://download.docker.com/linux/ubuntu
+user_1: redolf
+containerd_version: "1.6.15"
