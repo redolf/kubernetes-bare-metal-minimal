@@ -1,0 +1,52 @@
+---
+- name: "Установка вспомогательных пакетов"
+  become: true
+  apt:
+    name:
+      - keepalived
+      - haproxy
+    state: present
+    update_cache: yes
+
+# - name: "Чистим каталог пользователя после загрузок"
+#   file:
+#     path: "{{ item }}"
+#     state: absent
+#     force: yes
+#   loop:
+#     - "/home/{{ user_1 }}/bin"
+#     - "/home/{{ user_1 }}/containerd-{{ containerd_version }}-linux-amd64.tar.gz"
+#     - "/home/{{ user_1 }}/runc.amd64"
+#     - "/home/{{ user_1 }}/cni-plugins-linux-amd64-v1.2.0.tgz"
+
+# - name: "Запуск containerd"
+#   become: true
+#   systemd:
+#     name: containerd
+#     state: started
+
+# - name: "Добавление ключа репозитория Kubernetes"
+#   apt_key:
+#     url: "{{ k8s_repo_key }}"
+#     state: present
+
+# - name: "Добавление репозитория Kubernetes в apt"
+#   apt_repository:
+#     repo: "{{ k8s_repo }}"
+#     state: present
+
+# - name: "Установка бинарей: kubeadm, kubectl, kubelet"
+#   apt:
+#     name: "{{ item+'='+k8s_version+'-00' if k8s_version is defined else item }}"
+#     state: "present"
+#     allow_downgrade: true
+#   loop:
+#     - kubeadm
+#     - kubectl
+#     - kubelet
+
+# - name: "Установка маркера hold для пакетов kubelet, kubeadm и kubectl"
+#   command: sudo apt-mark hold kubelet kubeadm kubectl
+
+# - name: "Установим socket-file для containerd"
+#   command: sudo crictl config --set runtime-endpoint=unix:///run/containerd/containerd.sock

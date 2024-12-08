@@ -1,8 +1,16 @@
 ---
-- name: k8s_prepare
+- name: k8s_prepare_all
   become: yes
-  become_method: sudo
+  become_method: su
   become_user: root
   hosts: k8s
   roles:
-    - k8s_prepare
+    - k8s_prepare_all
+
+- name: k8s_prepare_master
+  become: yes
+  become_method: su
+  become_user: root
+  hosts: k8s_master
+  roles:
+    - k8s_prepare_master
