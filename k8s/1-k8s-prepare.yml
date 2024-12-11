@@ -6,11 +6,9 @@
   hosts: k8s
   roles:
     - k8s_prepare_all
-
-- name: k8s_prepare_master
-  become: yes
-  become_method: su
-  become_user: root
-  hosts: k8s_master
-  roles:
-    - k8s_prepare_master
+  vars_prompt:
+  - name: root_pass
+    prompt: "Введите значение для root_pass"
+    private: true  # Установите в true, если хотите скрыть ввод (например, для паролей)
+  vars_files:
+  - vars/main.yml

@@ -1,0 +1,21 @@
+---
+# vars file for k8s_prepare
+k8s_version: "1.31"
+k8s_repo_key: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+k8s_repo: deb https://apt.kubernetes.io kubernetes-xenial main
+docker_repo: https://download.docker.com/linux/ubuntu
+user_1: redolf
+containerd_version: "1.7.0"
+runc_version: "1.1.4"
+cni_plugin_version: "1.2.0"
+ansible_become_pass: "{{ root_pass }}"
+ansible_ssh_pass: "{{ root_pass }}"
+keepalived_virtual_ip: "192.168.88.20"
+keepalived_pass: "ZqSj#f1G"
+apiserver_port_frontend: "8888"
+
+# master node
+servers:
+  - { name: "node1", ip: "192.168.88.21", port: "6443" }
+  - { name: "node2", ip: "192.168.88.22", port: "6443" }
+  - { name: "node3", ip: "192.168.88.23", port: "6443" }

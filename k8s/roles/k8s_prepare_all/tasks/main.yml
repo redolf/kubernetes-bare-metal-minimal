@@ -1,5 +1,5 @@
 ---
-- name: "Создание директории .ssh"
+- name: "Создание директории .ssh для пользователя {{ user_1 }}"
   file:
     path: /home/{{ user_1 }}/.ssh
     state: directory
@@ -7,7 +7,7 @@
     owner: "{{ user_1 }}"
     group: "{{ user_1 }}"
 
-- name: "Добавление публичного ключа в authorized_keys"
+- name: "Добавление публичного ключа для пользователя {{ user_1 }} в authorized_keys"
   authorized_key:
     user: "{{ user_1 }}"
     state: present
@@ -164,8 +164,14 @@
       - gnupg
       - sudo
       - iptables
+      # - apt-transport-https
+      # - ca-certificates
+      # - ethtool
+
     state: present
     update_cache: yes
+
+
 
 # - name: "Чистим каталог пользователя после загрузок"
 #   file:
@@ -173,26 +179,46 @@
 #     state: absent
 #     force: yes
 #   loop:
-#     - "/home/{{ user_1 }}/bin"
-#     - "/home/{{ user_1 }}/containerd-{{ containerd_version }}-linux-amd64.tar.gz"
-#     - "/home/{{ user_1 }}/runc.amd64"
-#     - "/home/{{ user_1 }}/cni-plugins-linux-amd64-v1.2.0.tgz"
+#     - "/tmp/bin"
+#     - "/tmp/containerd-{{ containerd_version }}-linux-amd64.tar.gz"
+#     - "/tmp/runc.amd64"
+#     - "/tmp/cni-plugins-linux-amd64-v1.2.0.tgz"
 
-# - name: "Запуск containerd"
-#   become: true
-#   systemd:
-#     name: containerd
-#     state: started
+# 
 
-# - name: "Добавление ключа репозитория Kubernetes"
-#   apt_key:
-#     url: "{{ k8s_repo_key }}"
-#     state: present
+- name: "Скачивание GPG-ключа"
+  get_url:
+    url: "https://pkgs.k8s.io/core:/stable:/v{{ k8s_version }}/deb/Release.key"
+    dest: "/tmp/Release.key"
 
-# - name: "Добавление репозитория Kubernetes в apt"
-#   apt_repository:
-#     repo: "{{ k8s_repo }}"
-#     state: present
+- name: "Конвертация GPG-ключа в формат keyring"
+  command: "gpg --dearmor --yes -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg /tmp/Release.key"
+
+- name: "Установка прав доступа к ключу"
+  file:
+    path: "/etc/apt/keyrings/kubernetes-apt-keyring.gpg"
+    mode: '0644'
+
+- name: "Создание файла источника для Kubernetes"
+  copy:
+    content: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v{{ k8s_version }}/deb/ /\n"
+    dest: "/etc/apt/sources.list.d/kubernetes.list"
+    mode: '0644'
+
+# - name: "Установка прав доступа к файлу источника"
+#   file:
+#     path: "/etc/apt/sources.list.d/kubernetes.list"
+#     mode: '0644'
+
+- name: "Установка бинарей: kubeadm, kubectl, kubelet"
+  become: true
+  apt:
+    name:
+      - kubelet
+      - kubectl
+      - kubeadm
+    state: present
+    update_cache: yes
 
 # - name: "Установка бинарей: kubeadm, kubectl, kubelet"
 #   apt:
@@ -209,3 +235,65 @@
 
 # - name: "Установим socket-file для containerd"
 #   command: sudo crictl config --set runtime-endpoint=unix:///run/containerd/containerd.sock
+
+# MASTER TASKS
+- name: "Установка вспомогательных пакетов на master hosts"
+  become: true
+  apt:
+    name:
+      - keepalived
+      - haproxy
+    state: present
+    update_cache: yes
+  when: "'k8s_master' in group_names"
+
+- name: keepalived. Создание конфигурационного файла демона keepalived /etc/keepalived/keepalived.conf
+  template:
+    src: templates/keepalived.conf.j2
+    dest: /etc/keepalived/keepalived.conf
+  when: "'k8s_master' in group_names"
+
+- name: keepalived. Создание скрипта для проверки доступности хостов /etc/keepalived/check_apiserver.sh
+  template:
+    src: templates/check_apiserver.sh.j2
+    dest: /etc/keepalived/check_apiserver.sh
+    mode: '0755'
+  when: "'k8s_master' in group_names"
+
+- name: "keepalived. Включение и запуск демона"
+  systemd:
+    name: keepalived
+    enabled: true
+    state: restarted
+  when: "'k8s_master' in group_names"
+
+- name: haproxy. Создание конфигурационного файла демона haproxy /etc/haproxy/haproxy.cfg
+  template:
+    src: templates/haproxy.cfg.j2
+    dest: /etc/haproxy/haproxy.cfg
+  when: "'k8s_master' in group_names"
+
+- name: "haproxy. Включение и запуск демона"
+  systemd:
+    name: haproxy
+    enabled: true
+    state: restarted
+  when: "'k8s_master' in group_names"
+
+- name: Добавим пользователя {{ user_1 }} в группу sudo
+  ansible.builtin.user:
+    name: "{{ user_1 }}"
+    groups: sudo
+    append: yes  # Добавить в группу, не удаляя из других групп
+
+- name: Настройка sudo без пароля для пользователя {{ user_1 }}
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers
+    regexp: '^{{ user_1 }}'
+    line: '{{ user_1 }} ALL=(ALL) NOPASSWD: ALL'
+
+- name: Перезагрузка системы
+  ansible.builtin.reboot:
+    msg: "Перезагрузка инициирована Ansible"
+    connect_timeout: 5  # Время ожидания подключения
+    reboot_timeout: 600  # Время ожидания перезагрузки
