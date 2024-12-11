@@ -26,8 +26,8 @@
   ```
   > Здесь мы указываем сеть для подов 10.244.0.0/16, она уже по умолчанию прописана в манифесте сетевого плагина Calico или Flannel который мы установим с помощью Helm. Если решите указать другую сеть, придётся поправить её в манифесте сетевого плагина.
 
-- Подключите к кластеру kubernetes worker-ноды выполнив на них команду "kubeadm join" с параметрами полученными в консоли master-ноды при инициализации кластера
-- Скопируйте конфигурацию подключения к кластеру на master ноде:
+- Подключите к кластеру kubernetes master-ноды и worker-ноды выполнив на них команду "kubeadm join" с параметрами полученными в консоли master-ноды при инициализации кластера, для master и worker будет сгенерирован свой "kubeadm join".
+- Скопируйте конфигурацию подключения к кластеру на каждой master ноде:
 
   ```
   mkdir -p $HOME/.kube && sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config && sudo chown $(id -u):$(id -g) $HOME/.kube/config
@@ -40,7 +40,7 @@
 - Установите CNI (Container Network Interface) Calico на master-ноде:
 
   ```
-  kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.0/manifests/calico.yaml
+  kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.29.0/manifests/calico.yaml
   ```
 - Проверьте что все ноды кластера имеют статус Ready с помощью команды:
 
