@@ -17,7 +17,6 @@
 - Зайдите на одну из master-нод и выполните инициализацию кластера kubernetes:
 
   ```
-  sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --control-plane-endpoint k8s-master.poletaevlev.ru --service-dns-domain k8s.poletaevlev.ru
   kubeadm init \
   --pod-network-cidr=10.244.0.0/16 \
   --control-plane-endpoint "192.168.88.20:8888" \
@@ -35,7 +34,7 @@
 - Скопируйте конфигурацию подключения к кластеру на своё рабочее место:
 
   ```
-  mkdir -p $HOME/.kube && scp redolf@k8s-master-1.poletaevlev.ru:$HOME/.kube/config $HOME/.kube/config
+  mkdir -p $HOME/.kube && scp redolf@node1.poletaevlev.ru:$HOME/.kube/config $HOME/.kube/config
   ```
 - Установите CNI (Container Network Interface) Calico на master-ноде:
 

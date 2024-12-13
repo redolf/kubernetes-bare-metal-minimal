@@ -13,10 +13,14 @@
   ```
   kubectl create ns ingress-nginx
   ```
-- Установим ingress-nginx со значениями из файла ingress-nginx.yaml
+- Получить все параметры ingress-nginx в файл для дальнейшего конфигурирования
+  ```
+  helm show values ingress-nginx --repo https://kubernetes.github.io/ingress-nginx >> values.yaml
+  ```
   > Были изменены параметры для работы контроллера на bare-metal:
   > hostNetwork=true, hostPort/enabled=true, kind=DaemonSet
-  
+
+- Установим ingress-nginx со значениями из файла values.yaml в namespace ingress-nginx
   ```
-  helm install ingress-nginx ingress-nginx/ingress-nginx -n ingress-nginx --values ingress-nginx.yaml
+  helm install ingress-nginx ingress-nginx/ingress-nginx -n ingress-nginx --create-namespace --values values.yaml
   ```

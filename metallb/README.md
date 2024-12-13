@@ -6,7 +6,7 @@
 - Установим MetalLB
   
   ```
-  kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.12/config/manifests/metallb-native.yaml
+  kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.8/config/manifests/metallb-native.yaml
   ```
 - Отредактируйте пул ip в metallb/ippool.yaml
 - Установим манифесты IPAddressPool и L2Advertisement:
