@@ -1,7 +1,7 @@
 ---
 # vars file for k8s_prepare
 k8s_version: "1.31"
-user_1: redolf
+user_1: $USER
 containerd_version: "1.7.0"
 runc_version: "1.1.4"
 cni_plugin_version: "1.2.0"

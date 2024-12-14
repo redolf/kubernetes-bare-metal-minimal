@@ -1,4 +1,4 @@
-Настройка отказоустойчивого кластера Kubernetes на Debian
+Настройка отказоустойчивого кластера Kubernetes на Debian/Ubuntu
 =========
 
 Минимальные требования к виртуальным машинам
@@ -34,7 +34,7 @@
 - Скопируйте конфигурацию подключения к кластеру на своё рабочее место:
 
   ```
-  mkdir -p $HOME/.kube && scp redolf@node1.poletaevlev.ru:$HOME/.kube/config $HOME/.kube/config
+  mkdir -p $HOME/.kube && scp $USER@node1.poletaevlev.ru:$HOME/.kube/config $HOME/.kube/config
   ```
 - Установите CNI (Container Network Interface) Calico на master-ноде:
 
