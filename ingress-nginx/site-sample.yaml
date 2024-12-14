@@ -1,0 +1,153 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-ingress-app
+  labels:
+    app.kubernetes.io/name: test-ingress-app
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spa-deployment
+  namespace: test-ingress-app
+  labels:
+    app.kubernetes.io/name: spa
+    app.kubernetes.io/component: spa
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: spa
+      app.kubernetes.io/component: spa
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: spa
+        app.kubernetes.io/component: spa
+    spec:
+      containers:
+      - name: spa
+        image: nginx
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                - spa
+              - key: app.kubernetes.io/component
+                operator: In
+                values:
+                - spa
+            topologyKey: "kubernetes.io/hostname"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spa
+  namespace: test-ingress-app
+  labels:
+    app.kubernetes.io/component: spa
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: spa
+    app.kubernetes.io/component: spa
+  ports:
+  - port: 80
+    targetPort: 80
+    name: http
+    protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-api
+  namespace: test-ingress-app
+  labels:
+    app.kubernetes.io/name: frontend-api
+    app.kubernetes.io/component: frontend-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: frontend-api
+      app.kubernetes.io/component: frontend-api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: frontend-api
+        app.kubernetes.io/component: frontend-api
+    spec:
+      containers:
+      - name: frontend-api
+        image: chentex/go-rest-api
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                - frontend-api
+              - key: app.kubernetes.io/component
+                operator: In
+                values:
+                - frontend-api
+            topologyKey: "kubernetes.io/hostname"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-api
+  namespace: test-ingress-app
+  labels:
+    app.kubernetes.io/name: frontend-api
+    app.kubernetes.io/component: frontend-api
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: frontend-api
+    app.kubernetes.io/component: frontend-api
+  ports:
+  - port: 80
+    targetPort: 8080
+    name: http
+    protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-test-site
+  namespace: test-ingress-app
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: t1.poletaevlev.ru
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: spa
+            port:
+              number: 80
+      - path: /test
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend-api
+            port:
+              number: 80

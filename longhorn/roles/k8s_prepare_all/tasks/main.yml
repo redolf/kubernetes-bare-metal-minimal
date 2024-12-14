@@ -1,0 +1,24 @@
+# ---
+- name: "Установка вспомогательных пакетов"
+  become: true
+  apt:
+    name:
+      - nfs-common
+      - open-iscsi
+  when: "'k8s_worker' in group_names"
+
+- name: "Включение и запуск службы iscsid"
+  become: true
+  systemd:
+    name: iscsid
+    enabled: true
+    state: started
+  when: "'k8s_worker' in group_names"
+
+- name: "Включаем в кластере режим mount propagation"
+  lineinfile:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    line: '    - --feature-gates=MountPropagation=true'
+    insertafter: '    - kube-apiserver'  # Вставить строку после строки с kube-apiserver
+    state: present
+  when: "'k8s_master' in group_names"

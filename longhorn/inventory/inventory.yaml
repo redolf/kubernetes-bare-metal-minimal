@@ -1,0 +1,18 @@
+all:
+    children:
+        k8s:
+            hosts:
+                node1.poletaevlev.ru:
+                node2.poletaevlev.ru:
+                node3.poletaevlev.ru:
+                node4.poletaevlev.ru:
+                node5.poletaevlev.ru:
+        k8s_master:
+            hosts:
+                node1.poletaevlev.ru:
+                node2.poletaevlev.ru:
+                node3.poletaevlev.ru:
+        k8s_worker:
+            hosts:
+                node4.poletaevlev.ru:
+                node5.poletaevlev.ru:
