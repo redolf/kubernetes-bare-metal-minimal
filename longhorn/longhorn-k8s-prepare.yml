@@ -9,6 +9,10 @@
   vars_prompt:
   - name: root_pass
     prompt: "Введите значение для root_pass"
-    private: true  # Установите в true, если хотите скрыть ввод (например, для паролей)
+    private: true
+  - name: remote_user
+    prompt: "Введите значение для remote_user"
+    private: true
+  
   vars_files:
   - vars/main.yml
