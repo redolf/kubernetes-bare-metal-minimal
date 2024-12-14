@@ -13,5 +13,8 @@
   - name: root_pass
     prompt: "Введите значение для root_pass"
     private: true
+  - name: host_domain
+    prompt: "Введите значение для host_domain"
+    private: true
   vars_files:
   - vars/main.yml

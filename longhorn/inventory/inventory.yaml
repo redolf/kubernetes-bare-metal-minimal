@@ -2,17 +2,17 @@ all:
     children:
         k8s:
             hosts:
-                node1.poletaevlev.ru:
-                node2.poletaevlev.ru:
-                node3.poletaevlev.ru:
-                node4.poletaevlev.ru:
-                node5.poletaevlev.ru:
+                node1.{{ host_domain }}:
+                node2.{{ host_domain }}:
+                node3.{{ host_domain }}:
+                node4.{{ host_domain }}:
+                node5.{{ host_domain }}:
         k8s_master:
             hosts:
-                node1.poletaevlev.ru:
-                node2.poletaevlev.ru:
-                node3.poletaevlev.ru:
+                node1.{{ host_domain }}:
+                node2.{{ host_domain }}:
+                node3.{{ host_domain }}u:
         k8s_worker:
             hosts:
-                node4.poletaevlev.ru:
-                node5.poletaevlev.ru:
+                node4.{{ host_domain }}:
+                node5.{{ host_domain }}:
