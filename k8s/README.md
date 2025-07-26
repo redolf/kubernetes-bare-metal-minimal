@@ -34,12 +34,12 @@
 - Скопируйте конфигурацию подключения к кластеру на своё рабочее место:
 
   ```
-  mkdir -p $HOME/.kube && scp $USER@node1.poletaevlev.ru:$HOME/.kube/config $HOME/.kube/config
+  mkdir -p $HOME/.kube && scp $USER@node1.k8s.int:$HOME/.kube/config $HOME/.kube/config
   ```
 - Установите CNI (Container Network Interface) Calico на master-ноде:
 
   ```
-  kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.29.0/manifests/calico.yaml
+  kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.29.5/manifests/calico.yaml
   ```
 - Проверьте что все ноды кластера имеют статус Ready с помощью команды:
 
