@@ -9,10 +9,15 @@ vrrp_script check_apiserver {
 }
 
 vrrp_instance VI_1 {
+{% if inventory_hostname == groups['k8s_master'][0] %}
+    state MASTER
+    priority 101
+{% else %}
     state BACKUP
+    priority 100
+{% endif %}
     interface eth0
     virtual_router_id 5
-    priority 100
     advert_int 1
     nopreempt
     authentication {

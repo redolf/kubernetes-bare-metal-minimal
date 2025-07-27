@@ -22,15 +22,6 @@
     - "swap"
     - "none"
 
-# - name: "Выключаем файл подкачки"
-#   command: "swapoff -a"
-#   changed_when: false
-
-# - name: "Обновление пакетов"
-#   apt:
-#     upgrade: yes
-#     update_cache: yes
-
 - name: "Загружаем модуль br_netfilter и overlay в ядро"
 # Модуль br_netfilter расширяет возможности netfilter
   modprobe:
@@ -58,19 +49,6 @@
   - "net.ipv4.ip_forward=1"
   - "net.bridge.bridge-nf-call-iptables=1"
   - "net.bridge.bridge-nf-call-ip6tables=1"
-
-# - name: "Установка containerd"
-#   become: true
-#   apt:
-#     update_cache: yes
-#     name: containerd
-#     state: present
-
-# - name: "Остановка containerd"
-#   become: true
-#   systemd:
-#     name: containerd
-#     state: stopped
 
 - name: "Загрузка архива containerd-{{ containerd_version }} с Github"
   become: true
@@ -102,14 +80,6 @@
 - name: "Создание конфигурации по умолчанию для containerd"
   become: true
   shell: containerd config default | tee /etc/containerd/config.toml
-
-# В версии containerd в конфигурации по умолчанию отсутствует параметр SystemdCgroup
-# - name: "Настройка cgroup драйвера"
-#   become: true
-#   replace:
-#     path: /etc/containerd/config.toml
-#     regexp: 'SystemdCgroup = false'
-#     replace: 'SystemdCgroup = true'
 
 - name: "Установка systemd сервиса для containerd"
   become: true
@@ -172,27 +142,9 @@
       - gnupg
       - sudo
       - iptables
-      # - apt-transport-https
-      # - ca-certificates
-      # - ethtool
 
     state: present
     update_cache: yes
-
-
-
-# - name: "Чистим каталог пользователя после загрузок"
-#   file:
-#     path: "{{ item }}"
-#     state: absent
-#     force: yes
-#   loop:
-#     - "/tmp/bin"
-#     - "/tmp/containerd-{{ containerd_version }}-linux-amd64.tar.gz"
-#     - "/tmp/runc.amd64"
-#     - "/tmp/cni-plugins-linux-amd64-v1.2.0.tgz"
-
-# 
 
 - name: "Скачивание GPG-ключа"
   get_url:
@@ -213,11 +165,6 @@
     dest: "/etc/apt/sources.list.d/kubernetes.list"
     mode: '0644'
 
-# - name: "Установка прав доступа к файлу источника"
-#   file:
-#     path: "/etc/apt/sources.list.d/kubernetes.list"
-#     mode: '0644'
-
 - name: "Установка бинарей: kubeadm, kubectl, kubelet"
   become: true
   apt:
@@ -227,22 +174,6 @@
       - kubeadm
     state: present
     update_cache: yes
-
-# - name: "Установка бинарей: kubeadm, kubectl, kubelet"
-#   apt:
-#     name: "{{ item+'='+k8s_version+'-00' if k8s_version is defined else item }}"
-#     state: "present"
-#     allow_downgrade: true
-#   loop:
-#     - kubeadm
-#     - kubectl
-#     - kubelet
-
-# - name: "Установка маркера hold для пакетов kubelet, kubeadm и kubectl"
-#   command: sudo apt-mark hold kubelet kubeadm kubectl
-
-# - name: "Установим socket-file для containerd"
-#   command: sudo crictl config --set runtime-endpoint=unix:///run/containerd/containerd.sock
 
 # MASTER TASKS
 - name: "Установка вспомогательных пакетов на master hosts"
