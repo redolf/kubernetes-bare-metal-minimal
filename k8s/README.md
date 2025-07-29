@@ -19,7 +19,7 @@
   ```
   kubeadm init \
   --pod-network-cidr=10.244.0.0/16 \
-  --control-plane-endpoint "192.168.88.20:8888" \
+  --control-plane-endpoint "kube-api.k8s.int:8888" \
   --upload-certs
 
   ```
@@ -46,7 +46,7 @@
   ```
   kubectl get no -o wide
   ```
-- Проверьте что все системные поды кластера имеют статус Ready и счетчик Restart = 0 с помощью команды:
+- Проверьте что все системные поды кластера имеют статус Ready и счетчик Restart не увиличивается с помощью команды:
 
   ```
   kubectl get po -n kube-system
