@@ -19,7 +19,7 @@
   ```
   kubeadm init \
   --pod-network-cidr=10.244.0.0/16 \
-  --control-plane-endpoint "kube-api.k8s.int:8888" \
+  --control-plane-endpoint "api-k8s.poletaev.local:8888" \
   --upload-certs
 
   ```
@@ -34,7 +34,7 @@
 - Скопируйте конфигурацию подключения к кластеру на своё рабочее место:
 
   ```
-  mkdir -p $HOME/.kube && scp $USER@node1.k8s.int:$HOME/.kube/config $HOME/.kube/config
+  mkdir -p $HOME/.kube && scp $USER@control1-k8s.poletaev.local:$HOME/.kube/config $HOME/.kube/config
   ```
 - Установите CNI (Container Network Interface) Calico на master-ноде:
 
