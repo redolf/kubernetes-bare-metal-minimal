@@ -134,7 +134,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: t1.k8s.int
+  - host: t1.poletaev.local
     http:
       paths:
       - path: /
