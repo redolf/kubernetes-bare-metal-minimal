@@ -13,14 +13,94 @@
     state: present
     key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
 
-- name: "Выключаем файл подкачки"
-  mount:
-    path: "{{ item }}"
-    fstype: "swap"
-    state: "absent"
-  loop:
-    - "swap"
-    - "none"
+- name: Добавим пользователя {{ user_1 }} в группу sudo Debian
+  ansible.builtin.user:
+    name: "{{ user_1 }}"
+    groups: sudo
+    append: yes  # Добавить в группу, не удаляя из других групп
+  when: ansible_facts.os_family == "Debian"
+
+- name: Настройка sudo без пароля для пользователя {{ user_1 }}
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers
+    regexp: '^{{ user_1 }}'
+    line: '{{ user_1 }} ALL=(ALL) NOPASSWD: ALL'
+    validate: 'visudo -cf %s'
+
+- name: "Установка пакетов (Debian)"
+  become: true
+  apt:
+    name:
+      - bash-completion
+      - curl
+      - git
+      - gnupg
+      - iptables
+      - mc
+      - net-tools
+      - nfs-utils
+      - python3
+      - rsyslog
+      - sudo
+      - tar
+      - wget
+    state: present
+    update_cache: yes
+  when: ansible_facts.os_family == "Debian"
+
+- name: "Установка пакетов (RedHat)"
+  yum:
+    name:
+      - bash-completion
+      - curl
+      - git
+      - gnupg
+      - iptables
+      - mc
+      - net-tools
+      - nfs-utils
+      - python3
+      - rsyslog
+      - sudo
+      - tar
+      - wget
+    state: latest
+  when: ansible_facts.os_family == "RedHat"
+
+- name: "Отключаем Firewall (RedHat)"
+  service:
+    name: firewalld
+    state: stopped
+    enabled: no
+  when: ansible_facts.os_family == "RedHat"
+
+- name: "Проверяем включён ли swap"
+  shell: swapon
+  register: swap_present
+  changed_when: false
+  ignore_errors: true
+
+- name: "Выключаем swap"
+  shell: swapoff -a
+  when: swap_present.stdout != ""
+
+- name: "Отключаем монтирование swap в /etc/fstab"
+  replace:
+    path: /etc/fstab
+    regexp: '^([^#].*\s*swap\s*.*)$'
+    replace: '# \1'
+
+- name: "Проверяем включен ли SeLinux (RedHat)"
+  selinux:
+    state: disabled
+  register: selinux_ret
+  when: ansible_facts.os_family == "RedHat"
+
+- name: "Отключаем SeLinux (RedHat)"
+  shell: setenforce 0
+  when: 
+    - selinux_ret.reboot_required
+    - ansible_facts.os_family == "RedHat"
 
 - name: "Загружаем модуль br_netfilter и overlay в ядро"
 # Модуль br_netfilter расширяет возможности netfilter
@@ -133,57 +213,65 @@
     dest: "/etc/crictl.yaml"
     mode: "0644"
 
-- name: "Установка вспомогательных пакетов"
-  become: true
-  apt:
-    name:
-      - curl
-      - wget
-      - gnupg
-      - sudo
-      - iptables
-
-    state: present
-    update_cache: yes
-
 - name: "Скачивание GPG-ключа"
   get_url:
     url: "https://pkgs.k8s.io/core:/stable:/v{{ k8s_version }}/deb/Release.key"
     dest: "/tmp/Release.key"
+  when: ansible_facts.os_family == "Debian"
 
 - name: "Конвертация GPG-ключа в формат keyring"
   command: "gpg --dearmor --yes -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg /tmp/Release.key"
+  when: ansible_facts.os_family == "Debian"
 
 - name: "Установка прав доступа к ключу"
   file:
     path: "/etc/apt/keyrings/kubernetes-apt-keyring.gpg"
     mode: '0644'
+  when: ansible_facts.os_family == "Debian"
 
 - name: "Создание файла источника для Kubernetes"
   copy:
     content: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v{{ k8s_version }}/deb/ /\n"
     dest: "/etc/apt/sources.list.d/kubernetes.list"
     mode: '0644'
+  when: ansible_facts.os_family == "Debian"
+
+- name: "Создание файла источника для Kubernetes (RedHat)"
+  copy:
+    content: |
+      [kubernetes]
+      name=Kubernetes
+      baseurl=https://pkgs.k8s.io/core:/stable:/v{{ k8s_version }}/rpm/
+      enabled=1
+      gpgcheck=1
+      gpgkey=https://pkgs.k8s.io/core:/stable:/v{{ k8s_version }}/rpm/repodata/repomd.xml.key
+    dest: "/etc/yum.repos.d/kubernetes.repo"
+    mode: '0644'
+  when: ansible_facts.os_family == "RedHat"
 
 - name: "Установка бинарей: kubeadm, kubectl, kubelet"
   become: true
-  apt:
+  package:
     name:
       - kubelet
       - kubectl
       - kubeadm
     state: present
-    update_cache: yes
+
+- name: "kubelet. Включение и запуск демона"
+  systemd:
+    name: kubelet
+    enabled: true
+    state: restarted
 
 # MASTER TASKS
 - name: "Установка вспомогательных пакетов на master hosts"
   become: true
-  apt:
+  package:
     name:
       - keepalived
       - haproxy
     state: present
-    update_cache: yes
   when: "'k8s_master' in group_names"
 
 - name: keepalived. Создание конфигурационного файла демона keepalived /etc/keepalived/keepalived.conf
@@ -218,18 +306,6 @@
     enabled: true
     state: restarted
   when: "'k8s_master' in group_names"
-
-- name: Добавим пользователя {{ user_1 }} в группу sudo
-  ansible.builtin.user:
-    name: "{{ user_1 }}"
-    groups: sudo
-    append: yes  # Добавить в группу, не удаляя из других групп
-
-- name: Настройка sudo без пароля для пользователя {{ user_1 }}
-  ansible.builtin.lineinfile:
-    path: /etc/sudoers
-    regexp: '^{{ user_1 }}'
-    line: '{{ user_1 }} ALL=(ALL) NOPASSWD: ALL'
 
 - name: Перезагрузка системы
   ansible.builtin.reboot:

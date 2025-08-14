@@ -2,13 +2,9 @@ all:
     children:
         k8s:
             hosts:
-                control1-k8s.{{ host_domain }}:
-                control2-k8s.{{ host_domain }}:
-                control3-k8s.{{ host_domain }}:
-                worker1-k8s.{{ host_domain }}:
-                worker2-k8s.{{ host_domain }}:
+                k8s-c1.{{ host_domain }}:
+                k8s-w1.{{ host_domain }}:
+                k8s-w2.{{ host_domain }}:
         k8s_master:
             hosts:
-                control1-k8s.{{ host_domain }}:
-                control2-k8s.{{ host_domain }}:
-                control3-k8s.{{ host_domain }}:
+                k8s-c1.{{ host_domain }}:

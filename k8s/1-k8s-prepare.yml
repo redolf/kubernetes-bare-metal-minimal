@@ -1,5 +1,6 @@
 ---
 - name: k8s_prepare_all
+  gather_facts: yes
   become: yes
   become_method: su
   become_user: root
@@ -9,12 +10,12 @@
   vars_prompt:
   - name: remote_user
     prompt: "Введите значение для remote_user"
-    private: true
+    private: false
   - name: root_pass
     prompt: "Введите значение для root_pass"
     private: true
   - name: host_domain
     prompt: "Введите значение для host_domain"
-    private: true
+    private: false
   vars_files:
   - vars/main.yml
