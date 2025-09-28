@@ -15,7 +15,7 @@
   ```
   helm show values ingress-nginx --repo https://kubernetes.github.io/ingress-nginx >> values.yaml
   ```
-  > Были изменены параметры для работы контроллера на bare-metal:
+  > Если планируется использовать контроллер Ingress-Nginx без Metallb по ip адресу ноды кластера, то следует изменить параметры в values на использование сети хоста:
   > hostNetwork=true, hostPort/enabled=true
 
 - Установим ingress-nginx со значениями из файла values.yaml в namespace ingress-nginx
