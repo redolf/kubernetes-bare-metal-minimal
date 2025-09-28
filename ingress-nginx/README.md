@@ -18,5 +18,5 @@
   > hostNetwork=true, hostPort/enabled=true, kind=DaemonSet
   
   ```
-  helm install ingress-nginx ingress-nginx/ingress-nginx -n ingress-nginx --values ingress-nginx.yaml
+  helm install ingress-nginx ingress-nginx/ingress-nginx -n ingress-nginx --values ingress-nginx.yaml --create-namespace
   ```
