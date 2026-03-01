@@ -25,7 +25,7 @@
     path: /etc/sudoers
     regexp: '^{{ user_1 }}'
     line: '{{ user_1 }} ALL=(ALL) NOPASSWD: ALL'
-    validate: 'visudo -cf %s'
+    validate: '/usr/sbin/visudo -cf %s'
 
 - name: "Установка пакетов (Debian)"
   become: true
@@ -38,7 +38,7 @@
       - iptables
       - mc
       - net-tools
-      - nfs-utils
+      - nfs-common
       - python3
       - rsyslog
       - sudo
@@ -75,13 +75,13 @@
   when: ansible_facts.os_family == "RedHat"
 
 - name: "Проверяем включён ли swap"
-  shell: swapon
+  shell: /sbin/swapon
   register: swap_present
   changed_when: false
   ignore_errors: true
 
 - name: "Выключаем swap"
-  shell: swapoff -a
+  shell: /sbin/swapoff -a
   when: swap_present.stdout != ""
 
 - name: "Отключаем монтирование swap в /etc/fstab"
@@ -99,8 +99,8 @@
 - name: "Отключаем SeLinux (RedHat)"
   shell: setenforce 0
   when: 
-    - selinux_ret.reboot_required
     - ansible_facts.os_family == "RedHat"
+    - selinux_ret.reboot_required
 
 - name: "Загружаем модуль br_netfilter и overlay в ядро"
 # Модуль br_netfilter расширяет возможности netfilter
@@ -132,9 +132,9 @@
 
 - name: "Загрузка архива containerd-{{ containerd_version }} с Github"
   become: true
-  get_url:
-    url: https://github.com/containerd/containerd/releases/download/v{{ containerd_version }}/containerd-{{ containerd_version }}-linux-amd64.tar.gz
-    dest: /tmp/containerd-{{ containerd_version }}-linux-amd64.tar.gz
+  shell: |
+    curl -L -o /tmp/containerd-{{ containerd_version }}-linux-amd64.tar.gz \
+    https://github.com/containerd/containerd/releases/download/v{{ containerd_version }}/containerd-{{ containerd_version }}-linux-amd64.tar.gz
 
 - name: "Распаковка архива containerd-{{ containerd_version }} с Github"
   unarchive:
@@ -163,23 +163,23 @@
 
 - name: "Установка systemd сервиса для containerd"
   become: true
-  get_url:
-    url: https://raw.githubusercontent.com/containerd/containerd/main/containerd.service
-    dest: /etc/systemd/system/containerd.service
+  shell: |
+    curl -L -o /etc/systemd/system/containerd.service \
+    https://raw.githubusercontent.com/containerd/containerd/main/containerd.service
 
 - name: "Загружаем компонент runc v{{ runc_version }}"
-  get_url:
-    url: https://github.com/opencontainers/runc/releases/download/v{{ runc_version }}/runc.amd64
-    dest: /tmp/runc.amd64
+  shell: |
+    curl -L -o /tmp/runc.amd64 \
+    https://github.com/opencontainers/runc/releases/download/v{{ runc_version }}/runc.amd64
 
 - name: "Установка компонента runc v{{ runc_version }}"
   become: true
   command: install -m 755 /tmp/runc.amd64 /usr/local/sbin/runc
 
 - name: "Загружаем сетевые плагины CNI v{{ cni_plugin_version }}"
-  get_url:
-    url: https://github.com/containernetworking/plugins/releases/download/v{{ cni_plugin_version }}/cni-plugins-linux-amd64-v{{ cni_plugin_version }}.tgz
-    dest: /tmp/cni-plugins-linux-amd64-v{{ cni_plugin_version }}.tgz
+  shell: |
+    curl -L -o /tmp/cni-plugins-linux-amd64-v{{ cni_plugin_version }}.tgz \
+    https://github.com/containernetworking/plugins/releases/download/v{{ cni_plugin_version }}/cni-plugins-linux-amd64-v{{ cni_plugin_version }}.tgz
 
 - name: "Создание директории /opt/cni/bin для сетевых плагинов"
   file:
@@ -214,9 +214,9 @@
     mode: "0644"
 
 - name: "Скачивание GPG-ключа"
-  get_url:
-    url: "https://pkgs.k8s.io/core:/stable:/v{{ k8s_version }}/deb/Release.key"
-    dest: "/tmp/Release.key"
+  shell: |
+    curl -L -o /tmp/Release.key \
+    https://pkgs.k8s.io/core:/stable:/v{{ k8s_version }}/deb/Release.key
   when: ansible_facts.os_family == "Debian"
 
 - name: "Конвертация GPG-ключа в формат keyring"
@@ -257,6 +257,7 @@
       - kubectl
       - kubeadm
     state: present
+    update_cache: yes
 
 - name: "kubelet. Включение и запуск демона"
   systemd:

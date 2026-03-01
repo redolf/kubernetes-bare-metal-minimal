@@ -1,18 +1,16 @@
 ---
 # vars file for k8s_prepare
-k8s_version: "1.32"
+k8s_version: "1.35"
 user_1: "{{ remote_user }}"
-containerd_version: "2.0.4"
-runc_version: "1.2.6"
-cni_plugin_version: "1.6.2"
+containerd_version: "2.2.0"
+runc_version: "1.4.0"
+cni_plugin_version: "1.9.0"
 ansible_become_pass: "{{ root_pass }}"
 ansible_ssh_pass: "{{ root_pass }}"
-keepalived_virtual_ip: "192.168.88.20"
+keepalived_virtual_ip: "192.168.100.20"
 keepalived_pass: "ZqSj#f1G"
 apiserver_port_frontend: "8888"
 
 # master node
 servers:
-  - { name: "k8s-c1", ip: "192.168.88.21", port: "6443" }
-  - { name: "k8s-c2", ip: "192.168.88.22", port: "6443" }
-  - { name: "k8s-c3", ip: "192.168.88.23", port: "6443" }
+  - { name: "k8s-control1", ip: "192.168.100.21", port: "6443" }
