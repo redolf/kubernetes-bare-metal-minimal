@@ -1,53 +1,50 @@
-Настройка отказоустойчивого кластера Kubernetes на Debian/Ubuntu
-=========
+# Настройка отказоустойчивого кластера Kubernetes на Debian/Ubuntu/Rocky Linux
 
-Минимальные требования к виртуальным машинам
-------------
+
+## Минимальные требования к виртуальным машинам
 - 3 master, 2 CPUs and 2 GBs RAM
 - 2 workers, 2 CPUs and 2 GBs RAM
 
-Действия для настройки кластера
---------------
+## Действия для настройки кластера
 - Отредактируйте inventory/inventory.yaml и vars/main.yaml
-- Запустите ansible playbook и дождитесь его исполнения:
+- Запустите ansible playbook, введите запрашиваемые пререквизиты (во время работы возможно придётся отлаживать и немного подпиливать ansible роль, это нормально):
 
-  ```
-  ansible-playbook 1-k8s-prepare.yml
-  ```
+```bash
+ansible-playbook 1-k8s-prepare.yml
+```
+
 - Зайдите на одну из master-нод и выполните инициализацию кластера kubernetes:
 
-  ```
-  kubeadm init \
-  --pod-network-cidr=10.244.0.0/16 \
-  --control-plane-endpoint "k8s-api.pla.int:8888" \
-  --upload-certs
+```bash
+kubeadm init \
+--pod-network-cidr=10.244.0.0/16 \
+--control-plane-endpoint "k8s-api.pla.int:8888" \
+--upload-certs
+```
 
-  ```
-  > Здесь мы указываем сеть для подов 10.244.0.0/16, она уже по умолчанию прописана в манифесте сетевого плагина Calico или Flannel который мы установим с помощью Helm. Если решите указать другую сеть, придётся поправить её в манифесте сетевого плагина. В control-plane-endpoint указываем доменное имя привязанное к ip VRRP который будет назначаться одному из control-node для балансировки и чтобы не привязываться к определенным control-node
+  > pod-network-cidr - сеть для подов
+  > control-plane-endpoint - доменное имя или ip Api Kubernetes
 
 - Подключите к кластеру kubernetes master-ноды и worker-ноды выполнив на них команду "kubeadm join" с параметрами полученными в консоли master-ноды при инициализации кластера, для master и worker будет сгенерирован свой "kubeadm join".
+
 - Скопируйте конфигурацию подключения к кластеру на каждой master ноде:
 
-  ```
-  mkdir -p $HOME/.kube && sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config && sudo chown $(id -u):$(id -g) $HOME/.kube/config
-  ```
+```bash
+mkdir -p $HOME/.kube && sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config && sudo chown $(id -u):$(id -g) $HOME/.kube/config
+```
+
 - Скопируйте конфигурацию подключения к кластеру на своё рабочее место:
 
-  ```
-  mkdir -p $HOME/.kube && scp $USER@k8s-c1.poletaevlev.ru:$HOME/.kube/config $HOME/.kube/config
-  ```
-- Установите CNI (Container Network Interface) Calico на master-ноде:
+```bash
+mkdir -p $HOME/.kube && scp $USER@k8s-control1.pla.int:$HOME/.kube/config $HOME/.kube/config
+```
 
-  ```
-  kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.29.5/manifests/calico.yaml
-  ```
-- Проверьте что все ноды кластера имеют статус Ready с помощью команды:
+Кластер установлен но ноды кластера не будут Ready
 
-  ```
-  kubectl get no -o wide
-  ```
-- Проверьте что все системные поды кластера имеют статус Ready и счетчик Restart не увиличивается с помощью команды:
+```bash
+kubectl get no -o wide
+```
 
-  ```
-  kubectl get po -n kube-system
-  ```
+Далее нам нужно нужно определиться какой CNI (Container Network Interface) плагин будем использовать и установить его чтобы работала маршрутизация и сеть подов между нод кластера
+
+[Выбор и установка CNI плагина](cni)
