@@ -47,7 +47,7 @@ iptables-save | grep -v KUBE | iptables-restore
 #### Установка и конфигурация CNI плагина Cilium
 
 - Установка Cilium
->API_SERVER_IP - наш ip или доменной имя API kubernetes
+>API_SERVER_IP - наш ip или доменное имя API kubernetes
 >API_SERVER_PORT - порт API kubernetes
 >kubeProxyReplacement=true - замена обязанностей kube-proxy
 
