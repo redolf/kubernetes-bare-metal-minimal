@@ -1,3 +1,2 @@
-[CNI плагин Cilium](cilium)
-
-[CNI плагин Calico](calico)
+- [CNI плагин Cilium](cilium)
+- [CNI плагин Calico](calico)
