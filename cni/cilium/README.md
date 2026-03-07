@@ -30,7 +30,7 @@ Cilium в таком режиме полностью берёт на себя Cl
 #### Отключение kube-proxy (*если kube-proxy был установлен*)
 
 - Удалить kube‑proxy DaemonSet и ConfigMap
->Удаление ConfigMap нужно, чтобы kubeadm при апгрейдах не поставил kube‑proxy заново
+    >Удаление ConfigMap нужно, чтобы kubeadm при апгрейдах не поставил kube‑proxy заново
 
 ```bash
 kubectl -n kube-system delete ds kube-proxy && \
@@ -38,7 +38,7 @@ kubectl -n kube-system delete cm kube-proxy
 ```
 
 - Почистить правила iptables от KUBE‑цепочек на КАЖДОМ узле
->Это убирает мусор от kube‑proxy, чтобы он не конфликтовал с eBPF‑балансировкой Cilium
+    >Это убирает мусор от kube‑proxy, чтобы он не конфликтовал с eBPF‑балансировкой Cilium
 
 ```bash
 iptables-save | grep -v KUBE | iptables-restore
@@ -47,9 +47,9 @@ iptables-save | grep -v KUBE | iptables-restore
 #### Установка и конфигурация CNI плагина Cilium
 
 - Установка Cilium
->API_SERVER_IP - наш ip или доменное имя API kubernetes
->API_SERVER_PORT - порт API kubernetes
->kubeProxyReplacement=true - замена обязанностей kube-proxy
+    >API_SERVER_IP - наш ip или доменное имя API kubernetes
+    >API_SERVER_PORT - порт API kubernetes
+    >kubeProxyReplacement=true - замена обязанностей kube-proxy
 
 ```bash
 API_SERVER_IP=k8s-api.pla.int
@@ -119,8 +119,8 @@ Image versions         cilium             quay.io/cilium/cilium:v1.19.1@sha256:4
 ```
 
 - Создадим пул IP и Policy для выдачи ip сервисам LoadBalancer и доступа к ним
-> STARP_IP - Начало пула IP
- >STOP_IP - Конец пула IP
+    >STARP_IP - Начало пула IP
+    >STOP_IP - Конец пула IP
  
 ```yaml
 STARP_IP="192.168.100.200"
