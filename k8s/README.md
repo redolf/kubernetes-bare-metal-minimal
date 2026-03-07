@@ -22,8 +22,8 @@ kubeadm init \
 --upload-certs
 ```
 
-  > pod-network-cidr - сеть для подов
-  > control-plane-endpoint - доменное имя или ip Api Kubernetes
+> pod-network-cidr - сеть для подов  
+> control-plane-endpoint - доменное имя или ip Api Kubernetes
 
 - Подключите к кластеру kubernetes master-ноды и worker-ноды выполнив на них команду "kubeadm join" с параметрами полученными в консоли master-ноды при инициализации кластера, для master и worker будет сгенерирован свой "kubeadm join".
 
