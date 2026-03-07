@@ -119,7 +119,7 @@ Image versions         cilium             quay.io/cilium/cilium:v1.19.1@sha256:4
 ```
 
 - Создадим пул IP и Policy для выдачи ip сервисам LoadBalancer и доступа к ним
-    >STARP_IP - Начало пула IP
+    >STARP_IP - Начало пула IP  
     >STOP_IP - Конец пула IP
  
 ```yaml
