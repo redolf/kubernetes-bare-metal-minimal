@@ -14,7 +14,7 @@
 >   - nfs-common
 >   - open-iscsi
 > - Включает и стартует демона **iscsid** на нодах в группе **k8s_worker**
->  - Включает mount propagation в параметрах кластера внося запись в **/etc/kubernetes/manifests/kube-apiserver.yaml** на ноды в группе **k8s_master**
+> - Включает mount propagation в параметрах кластера внося запись в **/etc/kubernetes/manifests/kube-apiserver.yaml** на ноды в группе **k8s_master**
 
 ## Настройка кластера для установки Longhorn
 - Запустить ansible роль
@@ -74,6 +74,6 @@
   ```
   helm upgrade --install longhorn longhorn/longhorn -f values.yaml -n longhorn-system
   ```
-- 
+
 > ## Для разрешения удаления Longhron
 > Установите значение true для флага deleting-confirmation-flag, выполнив команду: `kubectl -n longhorn-system patch -p '{"value": "true"}' --type=merge lhs deleting-confirmation-flag` после чего уже можно удалять чарт `helm uninstall longhorn -n longhorn-system`
