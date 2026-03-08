@@ -2,17 +2,13 @@ all:
     children:
         k8s:
             hosts:
-                node1.{{ host_domain }}:
-                node2.{{ host_domain }}:
-                node3.{{ host_domain }}:
-                node4.{{ host_domain }}:
-                node5.{{ host_domain }}:
+                k8s-control1.{{ host_domain }}:
+                k8s-worker1.{{ host_domain }}:
+                k8s-worker2.{{ host_domain }}:
         k8s_master:
             hosts:
-                node1.{{ host_domain }}:
-                node2.{{ host_domain }}:
-                node3.{{ host_domain }}u:
+                k8s-control1.{{ host_domain }}:
         k8s_worker:
             hosts:
-                node4.{{ host_domain }}:
-                node5.{{ host_domain }}:
+                k8s-worker1.{{ host_domain }}:
+                k8s-worker2.{{ host_domain }}:
